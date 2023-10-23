@@ -4,34 +4,22 @@ import numpy as np
 
 # 判断一个unicode是否是汉字
 def is_chinese(uchar):
-    if '\u4e00' <= uchar <= '\u9fff':
-        return True
-    else:
-        return False
+    return '\u4e00' <= uchar <= '\u9fff'
 
 
 # 判断一个unicode是否是数字
 def is_number(uchar):
-    if '\u0030' <= uchar <= '\u0039':
-        return True
-    else:
-        return False
+    return '\u0030' <= uchar <= '\u0039'
 
 
 # 判断一个unicode是否是英文字母
 def is_alphabet(uchar):
-    if ('\u0041' <= uchar <= '\u005a') or ('\u0061' <= uchar <= '\u007a'):
-        return True
-    else:
-        return False
+    return '\u0041' <= uchar <= '\u005a' or '\u0061' <= uchar <= '\u007a'
 
 
 # 判断是否非汉字，数字和英文字符
 def is_other(uchar):
-    if not (is_chinese(uchar) or is_number(uchar)):
-        return True
-    else:
-        return False
+    return not (is_chinese(uchar) or is_number(uchar))
 
 
 def is_useful(uchar):
@@ -39,10 +27,7 @@ def is_useful(uchar):
 
 
 def is_str_useful(ustr):
-    for x in ustr:
-        if is_other(x):
-            return False
-    return True
+    return not any(is_other(x) for x in ustr)
 
 
 def load_vectors(fname):
@@ -58,24 +43,19 @@ def load_vectors(fname):
 
 def load_dicts(fname):
     fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
-    data = set()
-    for line in fin:
-        data.add(line.split()[0])
-    return data
+    return {line.split()[0] for line in fin}
 
 
 def intersection(vec):
     dic = load_dicts('common_words.txt')
     print('open dict')
     veck = set(vec.keys())
-    res = dic & veck  # 交集
-    return res
+    return dic & veck
 
 
 def judge(vec):
     veck = set(vec.keys())
-    res = set(filter(is_str_useful, veck))
-    return res
+    return set(filter(is_str_useful, veck))
 
 
 def write_file(res, vec, n, d):
@@ -83,24 +63,20 @@ def write_file(res, vec, n, d):
     np.set_printoptions(precision=3, suppress=True, linewidth=10000)
     print('write')
     with open('word_embed_clean.vec', 'w', encoding='utf-8') as f:
-        f.write('{} {}\n'.format(len(res) + 4, d))
-        f.write('UNK {}\n'.format(str(randvec[0])[1: -2]))
-        f.write('GO {}\n'.format(str(randvec[1])[1: -2]))
-        f.write('PAD {}\n'.format(str(randvec[2])[1: -2]))
-        f.write('EOS {}\n'.format(str(randvec[3])[1: -2]))
+        f.write(f'{len(res) + 4} {d}\n')
+        f.write(f'UNK {str(randvec[0])[1:-2]}\n')
+        f.write(f'GO {str(randvec[1])[1:-2]}\n')
+        f.write(f'PAD {str(randvec[2])[1:-2]}\n')
+        f.write(f'EOS {str(randvec[3])[1:-2]}\n')
         for k in res:
-            f.write(k + ' ' + vec[k])
+            f.write(f'{k} {vec[k]}')
 
 def single_word(vec, n, d):
     with open('usually_word', encoding='utf-8') as f:
         characters = f.read()
 
     charac = set(characters)
-    res = set()
-    for word in vec.keys():
-        if set(word).issubset(charac):
-            res.add(word)
-    return res
+    return {word for word in vec.keys() if set(word).issubset(charac)}
 
 def main():
     vec, n, d = load_vectors('wiki.zh.vec')

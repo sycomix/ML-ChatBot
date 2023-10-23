@@ -31,16 +31,24 @@ class DataBatch_db(object):
             query = tuple(self._ids[index: index + batch_size])
             self._index += batch_size
         else:
-            query = tuple(np.concatenate((self._ids[index:], self._ids[0: index + batch_size - size])))
+            query = tuple(
+                np.concatenate(
+                    (self._ids[index:], self._ids[: index + batch_size - size])
+                )
+            )
             self._index = index + batch_size - size
             if self._shuffle:
                 index = np.random.permutation(self._size)
                 self._ids = self._ids[index]
 
-        value = self._cursor.execute('SELECT * from conversation where rowid in %s' % str(query)).fetchall()
+        value = self._cursor.execute(
+            f'SELECT * from conversation where rowid in {query}'
+        ).fetchall()
         value = np.asarray(value)
         if len(value) != batch_size:
-            logging.warning('number of result is less than expect while query the database with key={}'.format(str(query)))
+            logging.warning(
+                f'number of result is less than expect while query the database with key={query}'
+            )
         return value[:, 0].tolist(), value[:, 1].tolist()
 
 

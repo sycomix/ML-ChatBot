@@ -25,11 +25,15 @@ class ProgressBar(object):
         self.seq = sep
 
     def __get_info(self):
-        # 【名称】状态 进度 单位 分割线 总数 单位
-        _info = self.info % (
-        self.title, self.status, self.count / self.chunk_size, self.unit, self.seq, self.total / self.chunk_size,
-        self.unit)
-        return _info
+        return self.info % (
+            self.title,
+            self.status,
+            self.count / self.chunk_size,
+            self.unit,
+            self.seq,
+            self.total / self.chunk_size,
+            self.unit,
+        )
 
     def refresh(self, count=1, status=None):
         self.count += count

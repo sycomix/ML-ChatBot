@@ -68,8 +68,7 @@ class seq2seqModel(object):
         encoder_outputs = tf.concat(output, 2)
         encoder_state = []
         for layer_id in range(num_layers // 2):
-            encoder_state.append(states[0][layer_id])  # forward
-            encoder_state.append(states[1][layer_id])  # backward
+            encoder_state.extend((states[0][layer_id], states[1][layer_id]))
         encoder_state = tuple(encoder_state)
         return encoder_outputs, encoder_state
 
@@ -153,7 +152,7 @@ class seq2seqModel(object):
         aver_loss = 0
         printed = False
         with self.sess.as_default():
-            for i in range(batch_num):
+            for _ in range(batch_num):
                 x, y = data.next_batch(batch_size)
                 batch_x, length_x, batch_y, length_y = self._preprocess_data(x, y)
                 feed_dict = {g.get_tensor_by_name('x_input:0'): batch_x,
@@ -176,9 +175,8 @@ class seq2seqModel(object):
                     # predict_output = np.argmax(predict_output[0], 1)  # 按行取最大值
                     predict_output = objector(predict_output[0])
                     print(
-                        'input: {}\noutput: {}\ntarget-input: {}\ntarget-output: {}\ntrain-output: {}\npredict-output: {}'.
-                            format(x[0], y[0], ' '.join(target_in), ' '.join(target), ' '.join(output),
-                                   ' '.join(predict_output)))
+                        f"input: {x[0]}\noutput: {y[0]}\ntarget-input: {' '.join(target_in)}\ntarget-output: {' '.join(target)}\ntrain-output: {' '.join(output)}\npredict-output: {' '.join(predict_output)}"
+                    )
                     printed = True
 
                 aver_loss += loss
@@ -191,7 +189,9 @@ class seq2seqModel(object):
         _lr = learning_rate
         g = self.graph
         tr_batch_num = train_data.size // batch_size
-        print("start training, batch size {}, max epoch: {}, max batch: {}".format(batch_size, max_epoch, tr_batch_num))
+        print(
+            f"start training, batch size {batch_size}, max epoch: {max_epoch}, max batch: {tr_batch_num}"
+        )
         loss_sum = 0
         start_time = time.time()
         with self.sess.as_default():

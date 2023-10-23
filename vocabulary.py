@@ -79,10 +79,7 @@ class Vocabulary(object):
 
     def prepare_text(self, text, cut=False, sos=False):
         text = self.clean_text(text)
-        if cut:
-            text = jieba.cut(text)
-        else:
-            text = text.split()
+        text = jieba.cut(text) if cut else text.split()
         text = self.words2indexs(text)
         text.append(self.EOS)
         if sos:
